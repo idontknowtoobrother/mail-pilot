@@ -13,7 +13,7 @@ var currentKey = null;
 var keysDown = new Array(256);
 var virtKeys = false;
 
-function Sprite(scene, imageFile, width, height){ 
+function Sprite(scene, imageFile, width, height, scoreEffectValue){ 
     //core class for game engine
     /*
     TODO:
@@ -23,6 +23,7 @@ function Sprite(scene, imageFile, width, height){
       Support multiple images / states (DONE 10/26/11)
       Sprite element now expects scene rather than canvas
     */
+  this.scoreEffectValue =  Math.floor(Math.random()*scoreEffectValue)+1
   this.canvas = scene.canvas;
   this.context = this.canvas.getContext("2d");
   this.image = new Image();
@@ -541,18 +542,6 @@ function Scene(){
 
 } // end Scene class def
 
-function Sound(src){
-  //sound effect class
-  //builds a sound effect based on a url
-  //ogg is preferred.
-  this.snd = document.createElement("audio");
-  this.snd.src = src;
-  
-  this.play = function(){
-    this.snd.play();
-  } // end play function
-} // end sound class def
-
 function Joy(){
   //virtual joystick for ipad
   //console.log("joystick created");
@@ -761,7 +750,7 @@ var AnimTimer = function()
    this.currentTime = 0;
    
    this.start = function(){ 
-	 this.currentTime = Date.now();
+	  this.currentTime = Date.now();
    }
    
    this.reset = function(){ 
@@ -1206,6 +1195,8 @@ function TileMap(scene){
   
   this.setPosition = function(){}
 }
+
+
 
 
 //keyboard constants

@@ -3,16 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <title>mailPilot</title>
-    <script type="text/javascript"
-            src = "simpleGame.js"></script>
+
+    <style>
+        /* hex (62160246) upgraded */
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@100&display=swap');
+
+        * {
+            font-family: 'Sarabun', sans-serif;
+            color: aliceblue;
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Old versions of Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+            supported by Chrome, Edge, Opera and Firefox */
+            overflow: transparent;
+            text-shadow: 1px 1px 2px black;
+        }
+  
+
+        body {
+            background: rgb(0, 0, 0);
+        }
+        
+        canvas {
+            border-radius: 15px;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+
+        #gameBoard, #reset-info {
+            text-align: center;
+            font-size: 20px;
+            width: 500px;
+            background: -webkit-linear-gradient(left, rgba(21, 21, 21, 0) 0%, rgba(255, 1, 1, 0.309) 39%, rgba(21, 21, 21, 0) 100%);
+            padding-bottom: 11px;
+            padding: 5px;
+        }
+
+        #heartTotal {
+            padding: 20px;
+            width: 50px;
+        }
+
+        #reset-info {
+            font-size: 50px;
+            left: -50%;
+            padding: 5px;
+            padding-bottom: 17px;
+            margin-left: 30%;
+        }
+
+        .restart-btn {
+            font-size: 40px;
+            font-weight: bold;
+            background: -webkit-linear-gradient(left, rgba(21, 21, 21, 0) 0%, rgba(251, 125, 255, 0.309) 39%, rgba(21, 21, 21, 0) 100%);
+            border: 0;
+            padding-bottom: 13px;
+            width: 150px;
+            margin-left: 30%;
+            transform: scale(100%);
+            transition: .2s;
+        }
+
+        .restart-btn:hover{
+            transform: scale(110%);
+            transition: .4s;
+        }
+      
+
+    </style>
+    <script type="text/javascript" src="simpleGame.js"></script>
+    <script type="text/javascript" src="hex62160246.js"></script>
     <script type="text/javascript">
-    
+
     //game sprites
     var scene;
     var plane;
-    var island;
-    var clouds;
-    var ocean;
+    
+    /* hex (62160246) upgraded */
+        var cloudsData; // arrs
+        var islandsData; // arrs
+        var ocean;
     
     //sounds
     var yayMp3;
@@ -22,24 +94,38 @@
     var engineMp3;
     var engineOgg;
     
-    //constants
-    var OCEAN_SPEED = 10;
-    var NUM_CLOUDS = 3;
+
+    /* hex (62160246) upgraded */
+        // Settings 
+        var OCEAN_SPEED = 10;
+
+        var SIZE_ISLANDS = 150;
+        var SIZE_CLOUDS = 50;
+
+        var MAX_CLOUDS = 2;
+        var MAX_ISLANDS = 1;
+        var MAX_HEARTS = 5;
     
+
+    /* hex (62160246) upgraded */
+        // Make board of game
+        var hexBoard = new GameBoard(MAX_HEARTS)
+
     function Plane(){
-        tPlane = new Sprite(scene, "plane.gif", 50, 50);
+        tPlane = new Sprite(scene, "plane.gif", 50, 50, 0);
         tPlane.setSpeed(0);
         tPlane.setPosition()
         
         tPlane.followMouse = function(){
-            this.setPosition(scene.getMouseX(), 500);
+            this.setPosition(scene.getMouseX(), 550);
         }
         
         return tPlane;
     } // end plane constructor
     
     function Island(){
-        tIsland = new Sprite(scene, "island.gif", 100, 100);
+
+        tIsland = new Sprite(scene, "island.gif", SIZE_ISLANDS, SIZE_ISLANDS, 10);
         
         tIsland.reset = function(){
             this.setDY(OCEAN_SPEED);
@@ -57,10 +143,10 @@
         tIsland.reset();
         
         return tIsland;
-    } // end island
+    } 
     
     function Cloud(){
-        tCloud = new Sprite(scene, "Cloud.gif", 150, 100);
+        tCloud = new Sprite(scene, "Cloud.gif", SIZE_CLOUDS+50, SIZE_CLOUDS, 10);
         
         tCloud.reset = function(){
             this.setDY((Math.random() * OCEAN_SPEED) + 5);
@@ -80,21 +166,8 @@
         return tCloud;
     } // end cloud 
     
-    function makeClouds(){
-        clouds = new Array(NUM_CLOUDS);
-        for (i = 0; i < NUM_CLOUDS; i++){
-            clouds[i] = new Cloud();
-        } // end for
-    } // end makeClouds
-    
-    function updateClouds(){
-        for (i = 0; i < NUM_CLOUDS; i++){
-            clouds[i].update();
-        } // end for
-    } // end updateClouds
-    
     function Ocean(){
-        tOcean = new Sprite(scene, "ocean.gif", 800, 1440);
+        tOcean = new Sprite(scene, "ocean.gif", 800, 1440, 0);
         tOcean.setDX(0);
         tOcean.setDY(OCEAN_SPEED);
         tOcean.setPosition(400, 300);
@@ -121,75 +194,75 @@
         return tOcean;
     } // end ocean
     
-    buildSounds = function(){
-        yayMp3 = new Sound("yay.mp3");
-        yayOgg = new Sound("yay.ogg");
-        
-        thunderMp3 = new Sound("thunder.mp3");
-        thunderOgg = new Sound("thunder.ogg");
-        
-        engineMp3 = new Sound("engine.mp3");
-        engineOgg = new Sound("engine.ogg");
-        
-    } // end buildSounds
-    
-    function checkCollisions(){
-        //plane on island
-        if (plane.collidesWith(island)){
-            yayOgg.play();
-            yayMp3.play();
-            island.reset();
-        } // end if
-        
-        //plane on cloud
-        for (i = 0; i < NUM_CLOUDS; i++){
-            if (plane.collidesWith(clouds[i])){
-                thunderOgg.play();
-                thunderMp3.play();
-                clouds[i].reset();
-            } // end if
-        } // end for
-    } // end checkCollisions
-    
+
     function init(){
         scene = new Scene();
         scene.hideCursor();
         
-        //add virtual joystick if possible
         if (scene.touchable){
             joy = new Joy();
-        } // end if
-        
-        buildSounds();
-        
-        plane = new Plane();
-        island = new Island();
-        makeClouds();
+        } 
+
+        // build sound plane
+        engineMp3 = new Audio("engine.mp3");
+        engineOgg = new Audio("engine.ogg");
+    
+
+
         ocean = new Ocean();
-        
+        /* @ hex (62160246) upgraded */
+            // Create management oop of 'clouds' and 'islands'
+            islandsData = generateSpriteWithFunction(
+                Island, 
+                MAX_ISLANDS, 
+                ['thunder.ogg', 'thunder.mp3']
+            )
+            cloudsData = generateSpriteWithFunction(
+                Cloud, 
+                MAX_CLOUDS,
+                ['yay.mp3', 'yay.ogg']
+            )
+        plane = new Plane();
+
         scene.start();
     }  // end init
     
     function update(){
-        //engineOgg.play();
+
         engineMp3.play();
-        
         scene.clear();
-        
         plane.followMouse();
         
-        checkCollisions();
+        /* @ hex (62160246) upgraded */
+            //  Tick time and refresh multiply value .
+            hexBoard.tickTime();
+            hexBoard.updateBoardUI('gameBoard', 'heartTotal');
+            // Check hit with 'cloud'.
+            var scoreAdd = cloudsData.isHitAndGetScore(plane)
+            if(scoreAdd > 0){
+                hexBoard.addScore(scoreAdd)
+            }
+            // Check hit with 'islands'.
+            var scoreRemove = islandsData.isHitAndGetScore(plane)
+            if(scoreRemove > 0){
+                hexBoard.decreaseHeart(scene)
+            }
             
         ocean.update();
-        island.update();
         plane.update();
-        updateClouds();
+
         
-    } // end update();
-    
+        // update all 'clouds' and 'islands'
+        cloudsData.update()
+        islandsData.update()
+        
+    }
+
+
     </script>
 </head>
 <body onload = "init()">
-    
+    <div id="gameBoard"> Score: 0 | Time: 0.0 | Multiply Score: 1</div>
+    <div id="heartTotal"> <img src="heart.png" width="24px" alt=""> x<span style="color: lime;"> 0</span></div>
 </body>
 </html>
