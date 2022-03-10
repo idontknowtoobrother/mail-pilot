@@ -76,11 +76,11 @@ generateIslands = (maxIslands) => {
 // Create Class 'GameBoard'
 function GameBoard(maxHeart){
 
-    this.score = 0
-    this.time = -1
-    this.heart = maxHeart
-    this.timeIncreaseAt = -1
-    this.mutiply = 1.0
+    this.score = 0              // คะแนน
+    this.time = -1              // เวลา
+    this.mutiply = 1.0          // จำนวนการคูณคะแนนเมื่อชนเมฆ
+    this.heart = maxHeart       // จะถูกลดลงต่อการชน เกาะ 1 ครั้ง
+    this.timeIncreaseAt = 2     // หากเวลา 'time' modular 2 ลงตัวจะอัพเกรดการคูณ score
     this.timer = new Timer()
     
     this.reset = function(reason){
@@ -105,18 +105,14 @@ function GameBoard(maxHeart){
     }
 
     this.updateMultiply = function(){
-      if(this.time > this.timeIncreaseAt){
+        if(this.time%this.timeIncreaseAt != 0)return;
+        // When 'time' modular 2 equal 0 then multiply+= 0.1
         this.mutiply+=0.1
-      }
     }
   
     this.tickTime = function(){
         // Multiply will add 0.1 when player stay alive more than 5 secs
         this.updateMultiply()
-  
-        // When time increase less than 'time' it's will +5 for get time to refresh
-        this.timeIncreaseAt = this.timeIncreaseAt < this.time ? this.time + 2 : this.timeIncreaseAt 
-        
         this.time = this.timer.getElapsedTime() 
     }
     
@@ -154,3 +150,4 @@ function GameBoard(maxHeart){
   
     return this
 }
+
