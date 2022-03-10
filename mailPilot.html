@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>mailPilot</title>
+    <script type="text/javascript"
+            src = "simpleGame.js"></script>
+    <script type="text/javascript">
+    
+    //game sprites
+    var scene;
+    var plane;
+    var island;
+    var clouds;
+    var ocean;
+    
+    //sounds
+    var yayMp3;
+    var yayOgg;
+    var thunderMp3;
+    var thunderOgg;
+    var engineMp3;
+    var engineOgg;
+    
+    //constants
+    var OCEAN_SPEED = 10;
+    var NUM_CLOUDS = 3;
+    
+    function Plane(){
+        tPlane = new Sprite(scene, "plane.gif", 50, 50);
+        tPlane.setSpeed(0);
+        tPlane.setPosition()
+        
+        tPlane.followMouse = function(){
+            this.setPosition(scene.getMouseX(), 500);
+        }
+        
+        return tPlane;
+    } // end plane constructor
+    
+    function Island(){
+        tIsland = new Sprite(scene, "island.gif", 100, 100);
+        
+        tIsland.reset = function(){
+            this.setDY(OCEAN_SPEED);
+            this.setDX(0);
+            newX = Math.random() * scene.width;
+            this.setPosition(newX, 50);
+        } // end reset
+        
+        tIsland.checkBounds = function(){
+            if (this.y > scene.height){
+                this.reset();
+            } // end if
+        } // end checkBounds
+        
+        tIsland.reset();
+        
+        return tIsland;
+    } // end island
+    
+    function Cloud(){
+        tCloud = new Sprite(scene, "Cloud.gif", 150, 100);
+        
+        tCloud.reset = function(){
+            this.setDY((Math.random() * OCEAN_SPEED) + 5);
+            this.setDX((Math.random() * 10) - 5);
+            newX = Math.random() * scene.width;
+            this.setPosition(newX, 50);
+        } // end reset
+        
+        tCloud.checkBounds = function(){
+            if (this.y > scene.height){
+                this.reset();
+            } // end if
+        } // end checkBounds
+        
+        tCloud.reset();
+        
+        return tCloud;
+    } // end cloud 
+    
+    function makeClouds(){
+        clouds = new Array(NUM_CLOUDS);
+        for (i = 0; i < NUM_CLOUDS; i++){
+            clouds[i] = new Cloud();
+        } // end for
+    } // end makeClouds
+    
+    function updateClouds(){
+        for (i = 0; i < NUM_CLOUDS; i++){
+            clouds[i].update();
+        } // end for
+    } // end updateClouds
+    
+    function Ocean(){
+        tOcean = new Sprite(scene, "ocean.gif", 800, 1440);
+        tOcean.setDX(0);
+        tOcean.setDY(OCEAN_SPEED);
+        tOcean.setPosition(400, 300);
+        
+        tOcean.checkBounds = function(){
+           //seamless ocean gif repeats
+        
+            if (this.y > 720){
+                this.setPosition(400, -120)
+            } // end if
+        } // end checkBounds
+        
+        tOcean.checkKeys = function(){
+            //used for testing ocean position
+            if (keysDown[K_UP]){
+                this.changeYby(-1);
+            }
+            if (keysDown[K_DOWN]){
+                this.changeYby(1);
+            }
+            console.log("Ocean Y value: " + this.y);
+        } // end checkKeys
+        
+        return tOcean;
+    } // end ocean
+    
+    buildSounds = function(){
+        yayMp3 = new Sound("yay.mp3");
+        yayOgg = new Sound("yay.ogg");
+        
+        thunderMp3 = new Sound("thunder.mp3");
+        thunderOgg = new Sound("thunder.ogg");
+        
+        engineMp3 = new Sound("engine.mp3");
+        engineOgg = new Sound("engine.ogg");
+        
+    } // end buildSounds
+    
+    function checkCollisions(){
+        //plane on island
+        if (plane.collidesWith(island)){
+            yayOgg.play();
+            yayMp3.play();
+            island.reset();
+        } // end if
+        
+        //plane on cloud
+        for (i = 0; i < NUM_CLOUDS; i++){
+            if (plane.collidesWith(clouds[i])){
+                thunderOgg.play();
+                thunderMp3.play();
+                clouds[i].reset();
+            } // end if
+        } // end for
+    } // end checkCollisions
+    
+    function init(){
+        scene = new Scene();
+        scene.hideCursor();
+        
+        //add virtual joystick if possible
+        if (scene.touchable){
+            joy = new Joy();
+        } // end if
+        
+        buildSounds();
+        
+        plane = new Plane();
+        island = new Island();
+        makeClouds();
+        ocean = new Ocean();
+        
+        scene.start();
+    }  // end init
+    
+    function update(){
+        //engineOgg.play();
+        engineMp3.play();
+        
+        scene.clear();
+        
+        plane.followMouse();
+        
+        checkCollisions();
+            
+        ocean.update();
+        island.update();
+        plane.update();
+        updateClouds();
+        
+    } // end update();
+    
+    </script>
+</head>
+<body onload = "init()">
+    
+</body>
+</html>
